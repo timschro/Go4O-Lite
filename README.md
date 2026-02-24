@@ -1,6 +1,6 @@
 # Go4O Lite
 
-An Android app for reading and evaluating [SportIdent](https://www.sportident.com/) (SI) electronic punch cards at orienteering events. Connect an SI station via USB, import your courses, and get instant pass/fail results with audio and visual feedback.
+An Android app for reading and evaluating [SportIdent](https://www.sportident.com/) (SI) electronic punch cards at orienteering events. Built especially for [Go4Orienteering](https://www.go4orienteering.org/) events but usable at any event with SI timing. Connect an SI station via USB, import your courses, and get instant pass/fail results with audio and visual feedback.
 
 ## Features
 
