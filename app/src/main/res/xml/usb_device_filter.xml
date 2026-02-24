@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Silicon Labs CP2102 (BSM8-USB, BSF8-USB) -->
+    <usb-device vendor-id="4292" product-id="32778" />
+    <!-- Silicon Labs CP2104 (some newer SI stations) -->
+    <usb-device vendor-id="4292" product-id="60000" />
+    <!-- FTDI FT232R (BSF7-USB, older SI stations) -->
+    <usb-device vendor-id="1027" product-id="24577" />
+    <!-- Prolific PL2303 (some SI-USB adapters) -->
+    <usb-device vendor-id="1659" product-id="8963" />
+    <!-- WCH CH340 (some SI-USB adapters) -->
+    <usb-device vendor-id="6790" product-id="29987" />
+</resources>

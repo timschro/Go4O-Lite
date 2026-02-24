@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<RaceCourseData xmlns="http://www.orienteering.org/datastandard/3.0"
+    iofVersion="3.0">
+  <Event>
+    <Name>Test Event</Name>
+  </Event>
+  <Course>
+    <Name>Short</Name>
+    <Length>2500</Length>
+    <Climb>80</Climb>
+    <CourseControl type="Start">
+      <Control>100</Control>
+    </CourseControl>
+    <CourseControl type="Control">
+      <Control>31</Control>
+    </CourseControl>
+    <CourseControl type="Control">
+      <Control>32</Control>
+    </CourseControl>
+    <CourseControl type="Control">
+      <Control>33</Control>
+    </CourseControl>
+    <CourseControl type="Finish">
+      <Control>200</Control>
+    </CourseControl>
+  </Course>
+  <Course>
+    <Name>Long</Name>
+    <Length>5000</Length>
+    <Climb>150</Climb>
+    <CourseControl type="Start">
+      <Control>100</Control>
+    </CourseControl>
+    <CourseControl type="Control">
+      <Control>31</Control>
+    </CourseControl>
+    <CourseControl type="Control">
+      <Control>42</Control>
+    </CourseControl>
+    <CourseControl type="Control">
+      <Control>53</Control>
+    </CourseControl>
+    <CourseControl type="Control">
+      <Control>64</Control>
+    </CourseControl>
+    <CourseControl type="Control">
+      <Control>33</Control>
+    </CourseControl>
+    <CourseControl type="Finish">
+      <Control>200</Control>
+    </CourseControl>
+  </Course>
+</RaceCourseData>

@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+    <!-- "O" circle representing orienteering -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M54,34 C43.51,34 35,42.51 35,53 C35,63.49 43.51,72 54,72 C64.49,72 73,63.49 73,53 C73,42.51 64.49,34 54,34Z M54,65 C47.37,65 42,59.63 42,53 C42,46.37 47.37,41 54,41 C60.63,41 66,46.37 66,53 C66,59.63 60.63,65 54,65Z"/>
+    <!-- Arrow/compass pointing NE -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M54,44 L58,53 L54,50 L50,53 Z"/>
+</vector>
