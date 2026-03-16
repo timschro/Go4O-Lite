@@ -52,6 +52,7 @@ object CourseEvaluator {
 
         for (control in courseControls) {
             var found = false
+            val savedIndex = punchIndex
             while (punchIndex < punches.size) {
                 if (punches[punchIndex].code == control) {
                     punchIndex++
@@ -62,6 +63,7 @@ object CourseEvaluator {
             }
             if (!found) {
                 missing.add(control)
+                punchIndex = savedIndex
             }
         }
         return missing
