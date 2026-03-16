@@ -19,6 +19,7 @@ data class AppStrings(
     val statusReadingCard: String,
     val statusReadError: String,
     val statusFatalError: String,
+    val statusReconnecting: String,
     val connectStation: String,
     val disconnect: String,
     val dismiss: String,
@@ -86,6 +87,11 @@ data class AppStrings(
     val deleteCourseDialogTitle: String,
     val deleteCourseDialogText: String,
 
+    // Feedback
+    val feedbackHeading: String,
+    val feedbackDescription: String,
+    val feedbackButton: String,
+
     // Errors
     val noCoursesFoundInFile: String,
     val importFailed: (String) -> String
@@ -115,6 +121,7 @@ private val englishStrings = AppStrings(
     statusReadingCard = "Reading card...",
     statusReadError = "Read error",
     statusFatalError = "Fatal error",
+    statusReconnecting = "Reconnecting...",
     connectStation = "Connect Station",
     disconnect = "Disconnect",
     dismiss = "Dismiss",
@@ -167,6 +174,9 @@ private val englishStrings = AppStrings(
     save = "Save",
     deleteCourseDialogTitle = "Delete course",
     deleteCourseDialogText = "This will permanently delete this course. This cannot be undone.",
+    feedbackHeading = "Feedback",
+    feedbackDescription = "Help us improve Go4O Lite by sharing your experience, reporting bugs, or suggesting features.",
+    feedbackButton = "Send Feedback",
     noCoursesFoundInFile = "No courses found in file",
     importFailed = { msg -> "Import failed: $msg" }
 )
@@ -185,6 +195,7 @@ private val germanStrings = AppStrings(
     statusReadingCard = "Lese SI-Chip...",
     statusReadError = "Lesefehler",
     statusFatalError = "Schwerer Fehler",
+    statusReconnecting = "Verbindung wird wiederhergestellt...",
     connectStation = "Station verbinden",
     disconnect = "Trennen",
     dismiss = "Schließen",
@@ -237,6 +248,9 @@ private val germanStrings = AppStrings(
     save = "Speichern",
     deleteCourseDialogTitle = "Bahn löschen",
     deleteCourseDialogText = "Diese Bahn wird unwiderruflich gelöscht.",
+    feedbackHeading = "Feedback",
+    feedbackDescription = "Hilf uns, Go4O Lite zu verbessern — teile deine Erfahrungen, melde Fehler oder schlage neue Funktionen vor.",
+    feedbackButton = "Feedback senden",
     noCoursesFoundInFile = "Keine Bahnen in Datei gefunden",
     importFailed = { msg -> "Import fehlgeschlagen: $msg" }
 )
@@ -255,6 +269,7 @@ private val frenchStrings = AppStrings(
     statusReadingCard = "Lecture carte...",
     statusReadError = "Erreur de lecture",
     statusFatalError = "Erreur fatale",
+    statusReconnecting = "Reconnexion...",
     connectStation = "Connecter la station",
     disconnect = "Déconnecter",
     dismiss = "Fermer",
@@ -307,6 +322,9 @@ private val frenchStrings = AppStrings(
     save = "Enregistrer",
     deleteCourseDialogTitle = "Supprimer le circuit",
     deleteCourseDialogText = "Ce circuit sera définitivement supprimé.",
+    feedbackHeading = "Commentaires",
+    feedbackDescription = "Aidez-nous à améliorer Go4O Lite en partageant votre expérience, en signalant des bugs ou en suggérant des fonctionnalités.",
+    feedbackButton = "Envoyer un commentaire",
     noCoursesFoundInFile = "Aucun circuit trouvé dans le fichier",
     importFailed = { msg -> "Échec de l'import : $msg" }
 )
@@ -325,6 +343,7 @@ private val dutchStrings = AppStrings(
     statusReadingCard = "Kaart lezen...",
     statusReadError = "Leesfout",
     statusFatalError = "Fatale fout",
+    statusReconnecting = "Opnieuw verbinden...",
     connectStation = "Station verbinden",
     disconnect = "Verbreken",
     dismiss = "Sluiten",
@@ -377,6 +396,9 @@ private val dutchStrings = AppStrings(
     save = "Opslaan",
     deleteCourseDialogTitle = "Baan verwijderen",
     deleteCourseDialogText = "Deze baan wordt permanent verwijderd.",
+    feedbackHeading = "Feedback",
+    feedbackDescription = "Help ons Go4O Lite te verbeteren door je ervaring te delen, bugs te melden of functies voor te stellen.",
+    feedbackButton = "Feedback versturen",
     noCoursesFoundInFile = "Geen banen gevonden in bestand",
     importFailed = { msg -> "Import mislukt: $msg" }
 )
@@ -395,6 +417,7 @@ private val spanishStrings = AppStrings(
     statusReadingCard = "Leyendo tarjeta...",
     statusReadError = "Error de lectura",
     statusFatalError = "Error fatal",
+    statusReconnecting = "Reconectando...",
     connectStation = "Conectar estación",
     disconnect = "Desconectar",
     dismiss = "Cerrar",
@@ -447,6 +470,9 @@ private val spanishStrings = AppStrings(
     save = "Guardar",
     deleteCourseDialogTitle = "Eliminar recorrido",
     deleteCourseDialogText = "Este recorrido se eliminará permanentemente.",
+    feedbackHeading = "Comentarios",
+    feedbackDescription = "Ayúdanos a mejorar Go4O Lite compartiendo tu experiencia, reportando errores o sugiriendo funciones.",
+    feedbackButton = "Enviar comentarios",
     noCoursesFoundInFile = "No se encontraron recorridos en el archivo",
     importFailed = { msg -> "Error al importar: $msg" }
 )
@@ -465,6 +491,7 @@ private val italianStrings = AppStrings(
     statusReadingCard = "Lettura scheda...",
     statusReadError = "Errore di lettura",
     statusFatalError = "Errore fatale",
+    statusReconnecting = "Riconnessione...",
     connectStation = "Connetti stazione",
     disconnect = "Disconnetti",
     dismiss = "Chiudi",
@@ -517,6 +544,9 @@ private val italianStrings = AppStrings(
     save = "Salva",
     deleteCourseDialogTitle = "Elimina percorso",
     deleteCourseDialogText = "Questo percorso verrà eliminato definitivamente.",
+    feedbackHeading = "Feedback",
+    feedbackDescription = "Aiutaci a migliorare Go4O Lite condividendo la tua esperienza, segnalando bug o suggerendo funzionalità.",
+    feedbackButton = "Invia feedback",
     noCoursesFoundInFile = "Nessun percorso trovato nel file",
     importFailed = { msg -> "Importazione fallita: $msg" }
 )
@@ -535,6 +565,7 @@ private val czechStrings = AppStrings(
     statusReadingCard = "Čtení čipu...",
     statusReadError = "Chyba čtení",
     statusFatalError = "Kritická chyba",
+    statusReconnecting = "Opětovné připojování...",
     connectStation = "Připojit stanici",
     disconnect = "Odpojit",
     dismiss = "Zavřít",
@@ -587,6 +618,9 @@ private val czechStrings = AppStrings(
     save = "Uložit",
     deleteCourseDialogTitle = "Smazat trať",
     deleteCourseDialogText = "Tato trať bude trvale smazána.",
+    feedbackHeading = "Zpětná vazba",
+    feedbackDescription = "Pomozte nám vylepšit Go4O Lite — sdílejte své zkušenosti, nahlašte chyby nebo navrhněte nové funkce.",
+    feedbackButton = "Odeslat zpětnou vazbu",
     noCoursesFoundInFile = "V souboru nebyly nalezeny žádné tratě",
     importFailed = { msg -> "Import se nezdařil: $msg" }
 )

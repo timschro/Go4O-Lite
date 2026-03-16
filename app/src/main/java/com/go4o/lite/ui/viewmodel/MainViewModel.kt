@@ -2,7 +2,10 @@ package com.go4o.lite.ui.viewmodel
 
 import android.content.Context
 import android.net.Uri
+import android.util.Log
 import androidx.lifecycle.ViewModel
+import com.google.firebase.crashlytics.ktx.crashlytics
+import com.google.firebase.ktx.Firebase
 import com.go4o.lite.data.model.AppSettings
 import com.go4o.lite.data.model.Course
 import com.go4o.lite.data.model.ReadoutResult
@@ -81,6 +84,7 @@ class MainViewModel : ViewModel() {
                     errorMessage = null
                 )
                 dataStore?.saveReadouts(newHistory)
+                Firebase.crashlytics.log("Card read: SI#${cardResult.siNumber}, status=${result.status}, course=${result.matchedCourse?.name ?: "none"}")
                 when (result.status) {
                     ResultStatus.PASS -> SoundPlayer.playPass()
                     ResultStatus.FAIL, ResultStatus.NO_COURSE -> SoundPlayer.playFail()
@@ -96,13 +100,16 @@ class MainViewModel : ViewModel() {
                     CommStatus.PROCESSING -> s.statusReadingCard
                     CommStatus.PROCESSING_ERROR -> s.statusReadError
                     CommStatus.FATAL_ERROR -> s.statusFatalError
+                    CommStatus.CONNECTION_LOST -> s.statusReconnecting
                 }
+                Firebase.crashlytics.log("Station status: $status")
                 _uiState.value = _uiState.value.copy(
                     connectionStatus = statusText,
                     isConnected = status == CommStatus.READY || status == CommStatus.ON || status == CommStatus.PROCESSING
                 )
             },
             onError = { message ->
+                Firebase.crashlytics.log("Station error: $message")
                 _uiState.value = _uiState.value.copy(errorMessage = message)
             }
         ).also {
@@ -115,6 +122,7 @@ class MainViewModel : ViewModel() {
         try {
             context.contentResolver.openInputStream(uri)?.use { inputStream ->
                 val courses = IofXmlParser.parseCourseData(inputStream)
+                Firebase.crashlytics.log("Courses imported: ${courses.size} courses")
                 _uiState.value = _uiState.value.copy(
                     courses = courses,
                     errorMessage = if (courses.isEmpty()) s.noCoursesFoundInFile else null
@@ -122,6 +130,7 @@ class MainViewModel : ViewModel() {
                 dataStore?.saveCourses(courses)
             }
         } catch (e: Exception) {
+            Firebase.crashlytics.recordException(e)
             _uiState.value = _uiState.value.copy(errorMessage = s.importFailed(e.message ?: ""))
         }
     }

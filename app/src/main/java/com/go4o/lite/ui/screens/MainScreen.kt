@@ -1,5 +1,9 @@
 package com.go4o.lite.ui.screens
 
+import com.go4o.lite.BuildConfig
+import com.go4o.lite.R
+import com.google.firebase.appdistribution.ktx.appDistribution
+import com.google.firebase.ktx.Firebase
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.AnimatedVisibility
@@ -41,7 +45,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.res.painterResource
-import com.go4o.lite.R
+
 import com.go4o.lite.data.model.AppSettings
 import com.go4o.lite.data.model.Language
 import com.go4o.lite.data.model.OverlayStyle
@@ -1012,6 +1016,12 @@ private fun SettingsTab(
             fontWeight = FontWeight.Bold
         )
 
+        Text(
+            text = "v${BuildConfig.VERSION_NAME} (${BuildConfig.VERSION_CODE})",
+            style = MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant
+        )
+
         // Language
         Card(
             modifier = Modifier.fillMaxWidth(),
@@ -1237,6 +1247,33 @@ private fun SettingsTab(
                     ) {
                         Text(strings.previewFail)
                     }
+                }
+            }
+        }
+
+        // Feedback
+        Card(
+            modifier = Modifier.fillMaxWidth(),
+            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
+        ) {
+            Column(modifier = Modifier.padding(16.dp)) {
+                Text(
+                    text = strings.feedbackHeading,
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.SemiBold
+                )
+                Spacer(modifier = Modifier.height(8.dp))
+                Text(
+                    text = strings.feedbackDescription,
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+                Spacer(modifier = Modifier.height(12.dp))
+                Button(
+                    onClick = { Firebase.appDistribution.startFeedback(R.string.feedback_prompt) },
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Text(strings.feedbackButton)
                 }
             }
         }

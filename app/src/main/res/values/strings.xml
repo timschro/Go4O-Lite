@@ -1,4 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">Go4O Lite</string>
+    <string name="feedback_prompt">How is your experience with Go4O Lite? Share any bugs, suggestions, or comments.</string>
 </resources>
