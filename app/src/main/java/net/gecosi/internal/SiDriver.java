@@ -43,7 +43,9 @@ public class SiDriver implements Runnable {
                 GecoSILogger.stateChanged(currentState.name());
                 currentState = currentState.receive(messageQueue, writer, siHandler);
             }
-            if (currentState.isError()) {
+            if (currentState == SiDriverState.CONNECTION_LOST) {
+                siHandler.notify(CommStatus.CONNECTION_LOST);
+            } else if (currentState.isError()) {
                 siHandler.notifyError(CommStatus.FATAL_ERROR, currentState.status());
             }
         } catch (InterruptedException e) {

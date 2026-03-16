@@ -16,6 +16,7 @@ class UsbSiCommReader(
         private const val METADATA_SIZE = 6
         private const val READ_TIMEOUT_MS = 100
         private const val STALE_TIMEOUT_MS = 500
+        const val POISON_COMMAND: Byte = 0xFF.toByte()
     }
 
     @Volatile
@@ -27,6 +28,7 @@ class UsbSiCommReader(
 
     override fun run() {
         val buffer = ByteArray(MAX_MESSAGE_SIZE)
+        var errorExit = false
         while (running && !Thread.currentThread().isInterrupted) {
             try {
                 val bytesRead = usbPort.read(buffer, READ_TIMEOUT_MS)
@@ -49,9 +51,14 @@ class UsbSiCommReader(
             } catch (e: Exception) {
                 if (running) {
                     Log.e(TAG, "Read error: ${e.message}")
+                    errorExit = true
                 }
                 break
             }
+        }
+        if (errorExit) {
+            val poison = SiMessage(byteArrayOf(0x00, POISON_COMMAND))
+            messageQueue.offer(poison)
         }
     }
 

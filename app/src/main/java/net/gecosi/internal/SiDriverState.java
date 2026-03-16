@@ -105,6 +105,9 @@ public enum SiDriverState {
                 throws IOException, InterruptedException {
             siHandler.notify(CommStatus.READY);
             SiMessage message = queue.take();
+            if (message.commandByte() == (byte) 0xFF) {
+                return CONNECTION_LOST;
+            }
             siHandler.notify(CommStatus.PROCESSING);
             switch (message.commandByte()) {
             case SiMessage.SI_CARD_5_DETECTED:
@@ -225,6 +228,13 @@ public enum SiDriverState {
             } catch (InvalidMessage e) {
                 return errorFallback(siHandler, "Invalid message: " + e.receivedMessage().toString());
             }
+        }
+    },
+
+    CONNECTION_LOST {
+        public boolean isError() { return true; }
+        public String status() {
+            return "USB connection lost";
         }
     };
 

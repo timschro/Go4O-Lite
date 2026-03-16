@@ -8,6 +8,8 @@ import android.content.IntentFilter
 import android.hardware.usb.UsbDevice
 import android.hardware.usb.UsbManager
 import android.os.Build
+import android.os.Handler
+import android.os.Looper
 import android.util.Log
 import com.go4o.lite.si.adapter.UsbSiPort
 import com.hoho.android.usbserial.driver.CdcAcmSerialDriver
@@ -34,6 +36,8 @@ class SiStationManager(
     companion object {
         private const val TAG = "SiStationManager"
         private const val ACTION_USB_PERMISSION = "com.go4o.lite.USB_PERMISSION"
+        private const val MAX_RECONNECT_ATTEMPTS = 10
+        private const val MAX_BACKOFF_MS = 30_000L
 
         /**
          * Known USB vendor/product IDs used by SportIdent stations.
@@ -57,6 +61,9 @@ class SiStationManager(
 
     private var siHandler: SiHandler? = null
     private var usbSerialPort: UsbSerialPort? = null
+    private val mainHandler = Handler(Looper.getMainLooper())
+    private var isReconnecting = false
+    private var reconnectAttempt = 0
 
     private val siListener = object : SiListener {
         override fun handleEcard(dataFrame: SiDataFrame) {
@@ -64,6 +71,14 @@ class SiStationManager(
         }
 
         override fun notify(status: CommStatus) {
+            if (status == CommStatus.CONNECTION_LOST) {
+                handleConnectionLost()
+                return
+            }
+            if (status == CommStatus.OFF && isReconnecting) {
+                // Suppress the OFF notification from SiDriver.stop() during reconnection
+                return
+            }
             onStatusChange(status)
         }
 
@@ -78,7 +93,14 @@ class SiStationManager(
             if (intent.action == ACTION_USB_PERMISSION) {
                 val granted = intent.getBooleanExtra(UsbManager.EXTRA_PERMISSION_GRANTED, false)
                 if (granted) {
-                    connectToStation()
+                    if (isReconnecting) {
+                        connectToStation()
+                        if (siHandler != null) {
+                            clearReconnectState()
+                        }
+                    } else {
+                        connectToStation()
+                    }
                 } else {
                     onError("USB permission denied")
                 }
@@ -86,19 +108,44 @@ class SiStationManager(
         }
     }
 
+    private val usbDetachReceiver = object : BroadcastReceiver() {
+        override fun onReceive(ctx: Context, intent: Intent) {
+            if (intent.action == UsbManager.ACTION_USB_DEVICE_DETACHED) {
+                Log.d(TAG, "USB device detached")
+                handleConnectionLost()
+            }
+        }
+    }
+
+    private val usbAttachReceiver = object : BroadcastReceiver() {
+        override fun onReceive(ctx: Context, intent: Intent) {
+            if (intent.action == UsbManager.ACTION_USB_DEVICE_ATTACHED && isReconnecting) {
+                Log.d(TAG, "USB device attached during reconnection, attempting reconnect")
+                mainHandler.removeCallbacksAndMessages(RECONNECT_TOKEN)
+                mainHandler.post { attemptReconnect() }
+            }
+        }
+    }
+
     fun registerReceiver() {
-        val filter = IntentFilter(ACTION_USB_PERMISSION)
+        val permissionFilter = IntentFilter(ACTION_USB_PERMISSION)
+        val detachFilter = IntentFilter(UsbManager.ACTION_USB_DEVICE_DETACHED)
+        val attachFilter = IntentFilter(UsbManager.ACTION_USB_DEVICE_ATTACHED)
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            context.registerReceiver(usbPermissionReceiver, filter, Context.RECEIVER_NOT_EXPORTED)
+            context.registerReceiver(usbPermissionReceiver, permissionFilter, Context.RECEIVER_NOT_EXPORTED)
+            context.registerReceiver(usbDetachReceiver, detachFilter, Context.RECEIVER_EXPORTED)
+            context.registerReceiver(usbAttachReceiver, attachFilter, Context.RECEIVER_EXPORTED)
         } else {
-            context.registerReceiver(usbPermissionReceiver, filter)
+            context.registerReceiver(usbPermissionReceiver, permissionFilter)
+            context.registerReceiver(usbDetachReceiver, detachFilter)
+            context.registerReceiver(usbAttachReceiver, attachFilter)
         }
     }
 
     fun unregisterReceiver() {
-        try {
-            context.unregisterReceiver(usbPermissionReceiver)
-        } catch (_: Exception) { }
+        try { context.unregisterReceiver(usbPermissionReceiver) } catch (_: Exception) { }
+        try { context.unregisterReceiver(usbDetachReceiver) } catch (_: Exception) { }
+        try { context.unregisterReceiver(usbAttachReceiver) } catch (_: Exception) { }
     }
 
     /**
@@ -175,6 +222,7 @@ class SiStationManager(
     }
 
     fun disconnect() {
+        clearReconnectState()
         siHandler?.stop()
         siHandler = null
         try {
@@ -185,4 +233,85 @@ class SiStationManager(
 
     val isConnected: Boolean
         get() = siHandler?.isAlive == true
+
+    // --- Reconnection logic ---
+
+    private fun handleConnectionLost() {
+        Log.d(TAG, "Connection lost, starting reconnection")
+        // Clean up existing handler/port
+        siHandler?.stop()
+        siHandler = null
+        try { usbSerialPort?.close() } catch (_: Exception) { }
+        usbSerialPort = null
+
+        if (!isReconnecting) {
+            isReconnecting = true
+            reconnectAttempt = 0
+            onStatusChange(CommStatus.CONNECTION_LOST)
+            scheduleReconnect()
+        }
+    }
+
+    private fun scheduleReconnect() {
+        val delayMs = minOf(1000L * (1L shl minOf(reconnectAttempt, 5)), MAX_BACKOFF_MS)
+        Log.d(TAG, "Scheduling reconnect attempt ${reconnectAttempt + 1} in ${delayMs}ms")
+        mainHandler.postAtTime({ attemptReconnect() }, RECONNECT_TOKEN, android.os.SystemClock.uptimeMillis() + delayMs)
+    }
+
+    private fun attemptReconnect() {
+        if (!isReconnecting) return
+
+        reconnectAttempt++
+        Log.d(TAG, "Reconnect attempt $reconnectAttempt")
+
+        val usbManager = context.getSystemService(Context.USB_SERVICE) as UsbManager
+        val driver = findSiDriver(usbManager)
+
+        if (driver == null) {
+            if (reconnectAttempt < MAX_RECONNECT_ATTEMPTS) {
+                scheduleReconnect()
+            } else {
+                Log.d(TAG, "Giving up reconnection after $MAX_RECONNECT_ATTEMPTS attempts")
+                clearReconnectState()
+                onStatusChange(CommStatus.OFF)
+                onError("Station disconnected — could not reconnect")
+            }
+            return
+        }
+
+        if (!usbManager.hasPermission(driver.device)) {
+            val flags = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                PendingIntent.FLAG_MUTABLE
+            } else {
+                0
+            }
+            val permissionIntent = PendingIntent.getBroadcast(context, 0,
+                Intent(ACTION_USB_PERMISSION).apply { setPackage(context.packageName) }, flags)
+            usbManager.requestPermission(driver.device, permissionIntent)
+            // Permission result will come via usbPermissionReceiver; schedule a retry in case it's denied/ignored
+            if (reconnectAttempt < MAX_RECONNECT_ATTEMPTS) {
+                scheduleReconnect()
+            }
+            return
+        }
+
+        connectToStation()
+        if (siHandler != null) {
+            clearReconnectState()
+        } else if (reconnectAttempt < MAX_RECONNECT_ATTEMPTS) {
+            scheduleReconnect()
+        } else {
+            clearReconnectState()
+            onStatusChange(CommStatus.OFF)
+            onError("Station disconnected — could not reconnect")
+        }
+    }
+
+    private fun clearReconnectState() {
+        isReconnecting = false
+        reconnectAttempt = 0
+        mainHandler.removeCallbacksAndMessages(RECONNECT_TOKEN)
+    }
 }
+
+private val RECONNECT_TOKEN = Any()
